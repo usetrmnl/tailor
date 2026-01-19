@@ -6,6 +6,17 @@ if (!wasm.HEAPU8) {
 
 const encode = wasm.cwrap('g5_encode_rgba_wasm', 'number', ['number','number','number','number','number']);
 
+// typedef struct theBrand {
+//   char name[16];
+//   char api_url[128];
+//   uint8_t u8Images[3952];
+// } Brand;
+
+const NAME_SIZE = 16;
+const URL_SIZE = 128;
+const IMAGES_SIZE = 3952;
+const TOTAL_SIZE = NAME_SIZE + URL_SIZE + IMAGES_SIZE;
+
 window.encodePNG = async function (file) {
   const img = await createImageBitmap(file);
   const canvas = new OffscreenCanvas(img.width, img.height);
@@ -21,9 +32,6 @@ window.encodePNG = async function (file) {
   }
 
   wasm.HEAPU8.set(data, inPtr);
-
-  const firstByte = wasm.HEAPU8[inPtr];
-
   const outMax = Math.max(1024 * 1024, img.width * img.height); // Conservative estimate
   const outPtr = wasm._malloc(outMax);
   const size = encode(inPtr, img.width, img.height, outPtr, outMax);
@@ -51,18 +59,32 @@ function downloadBinaryFile(data, filename) {
   }, 100);
 }
 
-export async function combineLogoAndLoader() {
+export async function createBinary() {
+  const BRAND_NAME = "TRMNL";
+  const API_URL = "https://trmnl.app";
+
   const logo = document.getElementById('logo-input');
   const loader = document.getElementById('loader-input');
   const logoBinary = await encodePNG(logo.files[0]);
-  downloadBinaryFile(logoBinary, 'logo.g')
   const loaderBinary = await encodePNG(loader.files[0]);
-  downloadBinaryFile(loaderBinary, 'loader.g')
 
   const totalLength = logoBinary.length + loaderBinary.length;
-  const combined = new Uint8Array(totalLength);
-  combined.set(logoBinary, 0);
-  combined.set(loaderBinary, logoBinary.length);
-  downloadBinaryFile(combined, 'browser.bin')
-  return new Blob([combined], { type: 'application/octet-stream' });
+  if (totalLength > IMAGES_SIZE) {
+    throw new Error(`Combined images (${totalLength} bytes) exceed maximum size (${IMAGES_SIZE} bytes)`);
+  }
+
+  const brandStruct = new Uint8Array(TOTAL_SIZE); // 4096 bytes (4 kilobyte)
+  const nameBytes = new TextEncoder().encode(BRAND_NAME);
+  brandStruct.set(nameBytes.slice(0, NAME_SIZE), 0);
+  const urlBytes = new TextEncoder().encode(API_URL);
+  brandStruct.set(urlBytes.slice(0, URL_SIZE), NAME_SIZE);
+
+  brandStruct.set(logoBinary, NAME_SIZE + URL_SIZE);
+  brandStruct.set(loaderBinary, NAME_SIZE + URL_SIZE + logoBinary.length);
+
+  downloadBinaryFile(logoBinary, 'logo.g')
+  downloadBinaryFile(loaderBinary, 'loader.g')
+  downloadBinaryFile(brandStruct, 'browser.bin')
+
+  return new Blob([brandStruct], { type: 'application/octet-stream' });
 }
