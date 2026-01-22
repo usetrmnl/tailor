@@ -82,9 +82,7 @@ export async function createBinary() {
   brandStruct.set(logoBinary, NAME_SIZE + URL_SIZE);
   brandStruct.set(loaderBinary, NAME_SIZE + URL_SIZE + logoBinary.length);
 
-  downloadBinaryFile(logoBinary, 'logo.g')
-  downloadBinaryFile(loaderBinary, 'loader.g')
-  downloadBinaryFile(brandStruct, 'browser.bin')
+  // downloadBinaryFile(brandStruct, 'brand.bin')
 
   return new Blob([brandStruct], { type: 'application/octet-stream' });
 }
