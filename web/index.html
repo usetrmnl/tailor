@@ -259,7 +259,7 @@
         }
     </style>
     <script type="module">
-      import { combineLogoAndLoader } from './app.js';
+      import { createBinary } from './app.js';
 
       (function() {
         const els = {
@@ -395,12 +395,12 @@
           btn.disabled = true;
 
           try {
-            const blob = await combineLogoAndLoader();
+            const blob = await createBinary();
             const manifest = {
               name: "TRMNL Firmware",
               new_install_prevent_erase: true,
               builds: [{
-                chipFamily: 'TRMNL',
+                chipFamily: 'ESP32-C3',
                 parts: [{ path: URL.createObjectURL(blob), offset: "0x3ff000" }]
               }]
             };
