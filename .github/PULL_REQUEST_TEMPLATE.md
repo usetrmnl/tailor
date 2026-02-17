@@ -3,4 +3,4 @@
 
 For all imagery used in these images, I have the right to publish them as CC0 licensed files. 
 **OR**
-All imagery can be distributed freely and was sourced here:  
+All imagery is Public Domain and was sourced here:  
