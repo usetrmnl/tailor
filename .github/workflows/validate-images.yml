@@ -1,0 +1,41 @@
+name: Image Validation and Gallery Update
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    paths:
+      - 'screens/800x480/**'
+
+jobs:
+  process-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to push the GALLERY.md update
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PNG dimensions
+        run: |
+          FILES=$(find screens/800x480 -name "*.png")
+          for FILE in $FILES; do
+            DIMENSIONS=$(identify -format "%wx%h" "$FILE")
+            if [ "$DIMENSIONS" != "800x480" ]; then
+              echo "::error file=$FILE::Invalid dimensions: $DIMENSIONS. Must be 800x480."
+              exit 1
+            fi
+          done
+
+      - name: Generate Gallery
+        run: python3 generate_gallery.py
+
+      - name: Commit and Push Gallery
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config --global user.name "Gallery Bot"
+          git config --global user.email "bot@github.com"
+          git add GALLERY_800x480.md
+          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update 800x480 gallery" && git push)
