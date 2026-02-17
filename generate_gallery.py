@@ -4,7 +4,7 @@ import urllib.parse
 # Configuration
 BASE_DIR = "screens/800x480"
 OUTPUT_FILE = "GALLERY_800x480.md"
-REPO_URL = "https://github.com/usetrmnl/tailor/raw/main"
+REPO_URL = "https://github.com/usetrmnl/trmnl-designs/raw/main"
 
 def generate_gallery():
     # Adjusted title and back-link reference for the specific size
