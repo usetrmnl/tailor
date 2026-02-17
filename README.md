@@ -42,3 +42,6 @@ _e.g._
 
 ## License
 Any PR'd screens will fall under either CC0 (you own the rights and choose this license) or Public Domain licensing for us to be able to host them and have traceability.
+
+## View the Gallery
+- [800x480 Screens](https://github.com/usetrmnl/tailor/blob/master/GALLERY_800x480.md)
