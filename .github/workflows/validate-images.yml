@@ -11,17 +11,25 @@ jobs:
   process-images:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Needed to push the GALLERY.md update
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Install ImageMagick
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
       - name: Validate PNG dimensions
         run: |
+          # Find all pngs in the 800x480 directory
           FILES=$(find screens/800x480 -name "*.png")
           for FILE in $FILES; do
+            echo "Validating $FILE"
+            # Extract dimensions
             DIMENSIONS=$(identify -format "%wx%h" "$FILE")
             if [ "$DIMENSIONS" != "800x480" ]; then
               echo "::error file=$FILE::Invalid dimensions: $DIMENSIONS. Must be 800x480."
