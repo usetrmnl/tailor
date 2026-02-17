@@ -1,4 +1,4 @@
-### Tailor your TRMNL
+# Tailor your TRMNL
 
 This repository contains the source code that lets you tailor your TRMNL. This works by creating a brand binary on your browser and updating the brand binary on the device directly without downloading / installing / modifying the [firmware](https://github.com/usetrmnl/trmnl-firmware) source code.
 
@@ -8,7 +8,7 @@ You can make customizations to the following brand attributes
 2. Logo
 3. Loading Icon
 
-### How to get started?
+## How to get started?
 1. Clone this repository
 2. `git submodule init`
 3. `git submodule update`
@@ -40,5 +40,5 @@ _e.g._
 `800x480-splash-dungeon_crawler_carl_safehouse-mashermello.png`
 `800x480-loading-dungeon_crawler_carl_princess_donut.png`
 
-### License
+## License
 Any PR'd screens will fall under either CC0 (you own the rights and choose this license) or Public Domain licensing for us to be able to host them and have traceability.
