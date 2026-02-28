@@ -222,6 +222,31 @@
         if (!installButton) return;
 
         customElements.whenDefined('esp-web-install-button').then(() => {
+          // Workaround: The @zjwhitehead/esp-web-tools@10.2.0-b1 fork does not
+          // pass filters to navigator.serial.requestPort(), causing the browser's
+          // serial port picker to show all available ports (Bluetooth, debug
+          // consoles, etc.) instead of only TRMNL-compatible ESP32-C3 devices.
+          //
+          // We patch requestPort() to inject USB vendor/product ID filters when
+          // the caller does not provide any. This restricts the picker to devices
+          // matching the Espressif ESP32-C3 built-in USB JTAG/serial interface:
+          //   VID 0x303A (Espressif), PID 0x1001 (ESP32-C3 USB JTAG)
+          //
+          // This patch can be removed if the upstream fork adds native support
+          // for the serial-port-filters attribute.
+          //
+          // Fixes: https://github.com/usetrmnl/tailor/issues/6
+          if (navigator.serial) {
+            const originalRequestPort = navigator.serial.requestPort.bind(navigator.serial);
+            const trmnlFilters = [{ usbVendorId: 0x303A, usbProductId: 0x1001 }];
+            navigator.serial.requestPort = function(options) {
+              if (!options || !options.filters || options.filters.length === 0) {
+                return originalRequestPort({ filters: trmnlFilters });
+              }
+              return originalRequestPort(options);
+            };
+          }
+
           if (!checkForBrowserError(installButton)) {
             setTimeout(() => checkForBrowserError(installButton), 25);
             setTimeout(() => checkForBrowserError(installButton), 200);
@@ -392,7 +417,26 @@
                         </div>
                     </div>
 
-                    <esp-web-install-button></esp-web-install-button>
+                    <!--
+                      Serial port filter restricts the browser's device picker to known TRMNL-compatible devices.
+                      Each entry is a USB Vendor ID (usbVendorId) and Product ID (usbProductId) in decimal.
+
+                      Current entries:
+                        - 0x303A / 0x1001 = Espressif ESP32-C3 built-in USB JTAG/serial (TRMNL default)
+
+                      NOTE: The serial-port-filters attribute is not currently read by the
+                      @zjwhitehead/esp-web-tools fork. A workaround patch in setupErrorHandling()
+                      applies these filters via navigator.serial.requestPort(). Keep this attribute
+                      so it takes effect automatically if the library adds native support.
+
+                      To add a new device:
+                        1. Plug it in via USB-C
+                        2. Run: system_profiler SPUSBDataType (macOS) or lsusb (Linux)
+                        3. Find the Vendor ID and Product ID (in hex)
+                        4. Convert to decimal and add a new object to the JSON array below
+                           e.g. 0x1A86 = 6790, 0x55D4 = 21972 → {"usbVendorId": 6790, "usbProductId": 21972}
+                    -->
+                    <esp-web-install-button serial-port-filters='[{"usbVendorId": 12346, "usbProductId": 4097}]'></esp-web-install-button>
                 </div>
             </div>
         </div>
