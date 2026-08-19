@@ -172,12 +172,17 @@
 
           try {
             const blob = await createBinary(state.logo.file, state.loader.file);
+            const blobURL = URL.createObjectURL(blob);
             const manifest = {
               name: "TRMNL Firmware",
               new_install_prevent_erase: true,
               builds: [{
+                // TRMNL (ESP32-C3, 4MB flash)
                 chipFamily: 'ESP32-C3',
-                parts: [{ path: URL.createObjectURL(blob), offset: "0x3ff000" }]
+                parts: [{ path: blobURL, offset: "0x3ff000" }]
+              }, {
+                chipFamily: 'ESP32-S3',
+                parts: [{ path: blobURL, offset: "0xfff000" }]
               }]
             };
 
