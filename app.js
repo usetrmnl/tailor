@@ -68,7 +68,15 @@ export async function createBinary(logoFile, loaderFile) {
 
   const totalLength = logoBinary.length + loaderBinary.length;
   if (totalLength > IMAGES_SIZE) {
-    throw new Error(`Combined images (${totalLength} bytes) exceed maximum size (${IMAGES_SIZE} bytes)`);
+    // Sizes are measured after G5 encoding, which can be far larger than the PNG files:
+    // G5 compresses solid shapes well but isolated pixels (grids, dot patterns, dithering) poorly.
+    const bytes = (n) => n.toLocaleString('en-US');
+    throw new Error(
+      `Images are too large for the device: after conversion the splash is ${bytes(logoBinary.length)} bytes ` +
+      `and the loader is ${bytes(loaderBinary.length)} bytes, ${bytes(totalLength)} in total ` +
+      `(limit ${bytes(IMAGES_SIZE)}). This is the converted size, not the PNG file size. ` +
+      `Dot patterns, grids and dithering convert to much larger files, so simplify or remove them.`
+    );
   }
 
   const brandStruct = new Uint8Array(TOTAL_SIZE); // 4096 bytes (4 kilobyte)
